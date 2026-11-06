@@ -87,6 +87,7 @@ jobs:
     if: always() && github.ref == 'refs/heads/main' && needs.test.result != 'skipped'
     runs-on: ubuntu-latest
     permissions:
+      contents: read # job-level permissions replace the workflow-level ones
       pages: write
       id-token: write
     environment:
