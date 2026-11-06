@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Known product defects",
+    "matchedStatuses": ["skipped"],
+    "messageRegex": ".*Known defect.*"
+  },
+  {
+    "name": "Timeouts (slow or unavailable target)",
+    "matchedStatuses": ["broken", "failed"],
+    "traceRegex": ".*TimeoutError.*"
+  },
+  {
+    "name": "Assertion failures (possible regressions)",
+    "matchedStatuses": ["failed"],
+    "traceRegex": ".*AssertionError.*"
+  },
+  {
+    "name": "Test infrastructure errors",
+    "matchedStatuses": ["broken"]
+  }
+]

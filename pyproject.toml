@@ -1,0 +1,26 @@
+[project]
+name = "playwright-pytest-framework"
+version = "1.0.0"
+description = "UI + API test automation framework with Playwright, Pytest and Allure"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --alluredir=allure-results"
+markers = [
+    "smoke: critical-path checks that run on every push",
+    "regression: full functional coverage",
+    "ui: browser tests against saucedemo.com",
+    "api: HTTP tests against restful-booker",
+]
+filterwarnings = [
+    # Raised by pytest-playwright's own base_url fixture, not by this suite.
+    "ignore:Session-scoped fixtures defined as instance methods:pytest.PytestRemovedIn10Warning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "PT"]

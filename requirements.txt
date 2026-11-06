@@ -1,0 +1,5 @@
+pytest==9.2.0
+pytest-playwright==0.10.0
+pytest-xdist==3.8.0
+allure-pytest==2.16.2
+ruff==0.17.4
