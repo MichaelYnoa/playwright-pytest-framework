@@ -24,3 +24,8 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "PT"]
+
+[tool.ruff.lint.isort]
+# The repo has an allure/ folder (report categories), which ruff would otherwise
+# mistake for a first-party package and sort `import allure` with local imports.
+known-third-party = ["allure"]
