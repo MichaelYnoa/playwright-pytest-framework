@@ -86,7 +86,7 @@ gh workflow run tests.yml                  # full suite
 gh workflow run tests.yml -f marker=smoke  # any marker expression, e.g. "api" or "ui and regression"
 ```
 
-Every run keeps the Allure results and the generated report as downloadable artifacts. Failed UI tests also upload their Playwright trace (`playwright show-trace trace.zip`).
+Every run keeps the Allure results and the generated report as downloadable artifacts. Only full-suite runs on `main` update the published report, so a filtered run never replaces it with a partial one. Failed UI tests also upload their Playwright trace (`playwright show-trace trace.zip`).
 
 ## Adding a test
 

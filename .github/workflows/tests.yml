@@ -65,6 +65,12 @@ jobs:
             echo "API.Target=https://restful-booker.herokuapp.com"
             echo "Commit=${GITHUB_SHA::7}"
           } > allure-results/environment.properties
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cat > allure-results/executor.json <<EOF
+          {"name": "GitHub Actions", "type": "github", "buildOrder": $GITHUB_RUN_NUMBER,
+           "buildName": "Run #$GITHUB_RUN_NUMBER ($GITHUB_EVENT_NAME)", "buildUrl": "$run_url",
+           "reportUrl": "https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"}
+          EOF
 
       - name: Upload Playwright traces of failed tests
         if: failure()
@@ -115,8 +121,10 @@ jobs:
           path: allure-report/
           retention-days: 7
 
+      # Only a full-suite run replaces the public report; filtered manual runs
+      # (e.g. marker=smoke) keep their report as an artifact only.
       - name: Package report for GitHub Pages
-        if: ${{ !github.event.repository.private }}
+        if: ${{ !github.event.repository.private && !inputs.marker }}
         uses: actions/upload-pages-artifact@v5
         with:
           path: allure-report
@@ -125,7 +133,7 @@ jobs:
   # the report is still built and kept as the `allure-report` artifact.
   deploy:
     needs: report
-    if: ${{ always() && needs.report.result == 'success' && !github.event.repository.private }}
+    if: ${{ always() && needs.report.result == 'success' && !github.event.repository.private && !inputs.marker }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
