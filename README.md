@@ -79,6 +79,23 @@ To see the report locally (needs Java): `allure serve allure-results`
 2. **Test**: the full suite on Chromium and Firefox in parallel. Traces of failed tests are uploaded as artifacts.
 3. **Report**: builds the Allure report, keeps the trend history from previous runs, and deploys it to GitHub Pages.
 
+Run it on demand from the **Actions** tab (*Tests → Run workflow*) or with the GitHub CLI:
+
+```bash
+gh workflow run tests.yml                  # full suite
+gh workflow run tests.yml -f marker=smoke  # any marker expression, e.g. "api" or "ui and regression"
+```
+
+Every run keeps the Allure results and the generated report as downloadable artifacts. Failed UI tests also upload their Playwright trace (`playwright show-trace trace.zip`).
+
+## Adding a test
+
+1. **New screen?** Add a page object in `pages/` that extends `BasePage`, sets `path` and defines its locators in `__init__` (prefer `get_by_test_id()` / `get_by_role()`). Export it from `pages/__init__.py`.
+2. **New endpoint?** Add a method to `api/booking_client.py` that goes through `_call()`, so it becomes an Allure step with the response attached.
+3. **Write the test** in `tests/ui/` or `tests/api/`, tag it with `smoke` or `regression`, and use the fixtures from `conftest.py` (`inventory_page` starts logged in, `created_booking` cleans up after itself).
+4. Assert with `expect()` for anything on the page, so the check retries instead of racing the UI.
+5. Check it locally before pushing: `ruff check . && ruff format --check . && pytest -n 4`.
+
 ## Design notes
 
 - **Waiting on navigation.** The cart and the catalog share the same `data-test` hooks. Reading the cart right after clicking it can pick up catalog items before the route changes, a race that showed up as an intermittent failure under parallel load. Navigation methods now wait for the target URL, and list checks use `expect().to_have_text()`, which retries.
