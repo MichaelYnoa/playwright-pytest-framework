@@ -44,8 +44,10 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright/python:v1.65.0-noble
     env:
-      HOME: /root # Firefox needs a writable home when the container runs as root
       PIP_BREAK_SYSTEM_PACKAGES: "1"
+    defaults:
+      run:
+        shell: bash # containers default to sh
     steps:
       - uses: actions/checkout@v7
       - run: python3 -m pip install -r requirements.txt
@@ -53,6 +55,7 @@ jobs:
       - name: Run tests (Chromium + Firefox, 4 workers)
         env:
           MARKER: ${{ github.event.inputs.marker }}
+          HOME: /root # Firefox needs a writable home when the container runs as root
         run: |
           args=(--browser chromium --browser firefox -n 4 --tracing retain-on-failure --output test-results)
           if [ -n "$MARKER" ]; then args+=(-m "$MARKER"); fi
