@@ -23,6 +23,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -36,18 +37,27 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Official image with browsers and system deps preinstalled: no apt-get on the
+    # runner, so a flaky Ubuntu mirror can't break the run. Keep the tag in sync
+    # with the playwright version pinned in requirements.txt.
+    container:
+      image: mcr.microsoft.com/playwright/python:v1.65.0-noble
+    env:
+      PIP_BREAK_SYSTEM_PACKAGES: "1" # throwaway container, no venv needed
+      PIP_ROOT_USER_ACTION: ignore
+      PIP_NO_CACHE_DIR: "1"
+    defaults:
+      run:
+        shell: bash # containers default to sh
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-          cache: pip
-      - run: pip install -r requirements.txt
-      - run: playwright install --with-deps chromium firefox
+      - run: python3 -m pip install -r requirements.txt
 
       - name: Run tests (Chromium + Firefox, 4 workers)
         env:
           MARKER: ${{ github.event.inputs.marker }}
+          HOME: /root # Firefox needs a writable home when the container runs as root
         run: |
           args=(--browser chromium --browser firefox -n 4 --tracing retain-on-failure --output test-results)
           if [ -n "$MARKER" ]; then args+=(-m "$MARKER"); fi
@@ -58,8 +68,8 @@ jobs:
         run: |
           cp allure/categories.json allure-results/
           {
-            echo "Python=$(python --version | cut -d' ' -f2)"
-            echo "Playwright=$(pip show playwright | awk '/^Version/ {print $2}')"
+            echo "Python=$(python3 --version | cut -d' ' -f2)"
+            echo "Playwright=$(python3 -m pip show playwright | awk '/^Version/ {print $2}')"
             echo "Browsers=Chromium, Firefox"
             echo "UI.Target=https://www.saucedemo.com"
             echo "API.Target=https://restful-booker.herokuapp.com"
@@ -92,6 +102,7 @@ jobs:
     needs: test
     if: always() && github.ref == 'refs/heads/main' && needs.test.result != 'skipped'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
