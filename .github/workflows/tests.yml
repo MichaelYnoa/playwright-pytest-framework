@@ -44,7 +44,9 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright/python:v1.65.0-noble
     env:
-      PIP_BREAK_SYSTEM_PACKAGES: "1"
+      PIP_BREAK_SYSTEM_PACKAGES: "1" # throwaway container, no venv needed
+      PIP_ROOT_USER_ACTION: ignore
+      PIP_NO_CACHE_DIR: "1"
     defaults:
       run:
         shell: bash # containers default to sh
