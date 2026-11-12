@@ -13,6 +13,7 @@ markers = [
     "ui: browser tests against saucedemo.com",
     "api: HTTP tests against restful-booker",
     "a11y: WCAG accessibility scans with axe-core",
+    "mobile: runs in a phone-sized context (Pixel 7 profile)",
 ]
 filterwarnings = [
     # Raised by pytest-playwright's own base_url fixture, not by this suite.

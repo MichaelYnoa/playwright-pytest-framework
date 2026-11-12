@@ -12,6 +12,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 | Layer | Target app | What is covered |
 |---|---|---|
 | UI | [saucedemo.com](https://www.saucedemo.com) | Login (happy path, locked-out user, validation), product sorting, cart, full checkout, order totals, known defects |
+| Mobile | [saucedemo.com](https://www.saucedemo.com) | Purchase flow, single-column layout, no horizontal scroll and side-menu logout on a Pixel 7 profile |
 | Accessibility | [saucedemo.com](https://www.saucedemo.com) | WCAG 2.2 A/AA scans with axe-core on every screen of the purchase flow, including error states |
 | API | [restful-booker](https://restful-booker.herokuapp.com) | Token auth, full CRUD on bookings, filtering, strict response contracts (pydantic), authorization on write operations |
 
@@ -23,6 +24,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 - **Independent, parallel-safe tests**: each test gets a fresh browser context. API tests create their own data with unique names and delete it in fixture teardown.
 - **Strict API contracts**: responses are parsed into pydantic models in strict mode, so a wrong type or an unexpected field fails the test with every mismatch listed. Offline tests prove the schemas reject that kind of drift.
 - **Accessibility as a gate**: axe-core scans fail the test on any WCAG 2.2 A/AA violation and attach the full axe result to the report.
+- **Mobile emulation**: tests marked `mobile` run in a Pixel 7 context (viewport, touch, user agent) through a `browser_context_args` override, so traces and failure screenshots keep working.
 - **Cross-browser**: Chromium and Firefox in one run, 4 workers via `pytest-xdist`.
 - **Known defects tracked, not hidden**: `xfail(strict=True)` documents a real bug in the demo app. If it ever gets fixed, the test flips to failing so the marker gets removed.
 - **Debuggable failures**: a screenshot is attached to the Allure report, and the Playwright trace is uploaded as a CI artifact.
@@ -41,7 +43,8 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 │   ├── login_page.py
 │   ├── inventory_page.py
 │   ├── cart_page.py
-│   └── checkout_page.py
+│   ├── checkout_page.py
+│   └── side_menu.py
 ├── data/                # Test data and builders
 ├── config/settings.py   # Environment-driven settings
 ├── tests/
@@ -63,6 +66,7 @@ pytest                                   # everything, Chromium
 pytest -m smoke                          # critical path only
 pytest -m api                            # API only
 pytest -m a11y                           # accessibility scans only
+pytest -m mobile                         # phone-sized context only
 pytest --browser firefox --headed        # watch it run
 pytest -n 4 --browser chromium --browser firefox   # parallel, cross-browser
 ```
@@ -77,6 +81,7 @@ To see the report locally (needs Java): `allure serve allure-results`
 | `regression` | Full functional coverage |
 | `ui` / `api` | Test layer |
 | `a11y` | Accessibility scans |
+| `mobile` | Phone-sized context |
 
 ## CI pipeline
 

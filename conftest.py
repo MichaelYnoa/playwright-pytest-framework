@@ -17,6 +17,22 @@ def _test_id_attribute(playwright: Playwright):
     playwright.selectors.set_test_id_attribute("data-test")
 
 
+MOBILE_DEVICE = "Pixel 7"
+
+
+@pytest.fixture
+def browser_context_args(browser_context_args, playwright: Playwright, browser_name, request):
+    """Tests marked `mobile` get a phone profile; everything else keeps the default."""
+    if not request.node.get_closest_marker("mobile"):
+        return browser_context_args
+    device = {**playwright.devices[MOBILE_DEVICE]}
+    device.pop("default_browser_type")
+    if browser_name == "firefox":
+        # Firefox has no mobile emulation; it still gets the phone viewport, touch and UA.
+        device.pop("is_mobile")
+    return {**browser_context_args, **device}
+
+
 @pytest.fixture
 def page(page):
     page.set_default_timeout(settings.default_timeout_ms)
