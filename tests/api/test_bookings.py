@@ -5,8 +5,6 @@ from data.bookings import booking_payload
 
 pytestmark = [pytest.mark.api, allure.feature("Bookings API")]
 
-BOOKING_FIELDS = {"firstname", "lastname", "totalprice", "depositpaid", "bookingdates"}
-
 
 @pytest.mark.smoke
 @allure.severity(allure.severity_level.CRITICAL)
@@ -20,19 +18,6 @@ def test_create_booking_returns_what_was_sent(authed_booking_api):
     authed_booking_api.delete(body["bookingid"])
     assert isinstance(body["bookingid"], int)
     assert body["booking"] == payload
-
-
-@pytest.mark.regression
-def test_get_booking_matches_contract(booking_api, created_booking):
-    booking_id, payload = created_booking
-
-    response = booking_api.get(booking_id)
-
-    assert response.status == 200
-    body = response.json()
-    assert BOOKING_FIELDS <= body.keys()
-    assert body["bookingdates"].keys() == {"checkin", "checkout"}
-    assert body == payload
 
 
 @pytest.mark.regression

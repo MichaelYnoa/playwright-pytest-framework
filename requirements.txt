@@ -4,4 +4,5 @@ playwright==1.65.0 # keep in sync with the CI container image tag
 pytest-xdist==3.8.0
 allure-pytest==2.16.2
 axe-playwright-python==0.1.8
+pydantic==2.14.3
 ruff==0.17.4
