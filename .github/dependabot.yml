@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python-dependencies:
+        patterns: ["*"]
+    ignore:
+      # Updated by hand together with the Playwright container image in tests.yml,
+      # since the browsers in the image must match the Python package version.
+      - dependency-name: playwright
+    commit-message:
+      prefix: deps
