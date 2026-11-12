@@ -13,7 +13,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 |---|---|---|
 | UI | [saucedemo.com](https://www.saucedemo.com) | Login (happy path, locked-out user, validation), product sorting, cart, full checkout, order totals, known defects |
 | Accessibility | [saucedemo.com](https://www.saucedemo.com) | WCAG 2.2 A/AA scans with axe-core on every screen of the purchase flow, including error states |
-| API | [restful-booker](https://restful-booker.herokuapp.com) | Token auth, full CRUD on bookings, filtering, response contract, authorization on write operations |
+| API | [restful-booker](https://restful-booker.herokuapp.com) | Token auth, full CRUD on bookings, filtering, strict response contracts (pydantic), authorization on write operations |
 
 ## Highlights
 
@@ -21,6 +21,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 - **Stable locators**: `data-test` attributes via `get_by_test_id()`, plus role-based locators. No XPath and no CSS chains tied to layout.
 - **No sleeps**: Playwright auto-waiting, web-first `expect()` assertions, and page objects that wait for navigation before reading the next page.
 - **Independent, parallel-safe tests**: each test gets a fresh browser context. API tests create their own data with unique names and delete it in fixture teardown.
+- **Strict API contracts**: responses are parsed into pydantic models in strict mode, so a wrong type or an unexpected field fails the test with every mismatch listed. Offline tests prove the schemas reject that kind of drift.
 - **Accessibility as a gate**: axe-core scans fail the test on any WCAG 2.2 A/AA violation and attach the full axe result to the report.
 - **Cross-browser**: Chromium and Firefox in one run, 4 workers via `pytest-xdist`.
 - **Known defects tracked, not hidden**: `xfail(strict=True)` documents a real bug in the demo app. If it ever gets fixed, the test flips to failing so the marker gets removed.
@@ -33,7 +34,8 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 ```
 ├── api/                 # API client (Playwright APIRequestContext)
 ├── utils/               # Shared helpers (axe accessibility checks)
-│   └── booking_client.py
+│   ├── booking_client.py
+│   └── schemas.py       # Response contracts (pydantic)
 ├── pages/               # Page Objects
 │   ├── base_page.py
 │   ├── login_page.py
@@ -96,7 +98,7 @@ Every run keeps the Allure results and the generated report as downloadable arti
 ## Adding a test
 
 1. **New screen?** Add a page object in `pages/` that extends `BasePage`, sets `path` and defines its locators in `__init__` (prefer `get_by_test_id()` / `get_by_role()`). Export it from `pages/__init__.py`.
-2. **New endpoint?** Add a method to `api/booking_client.py` that goes through `_call()`, so it becomes an Allure step with the response attached.
+2. **New endpoint?** Add a method to `api/booking_client.py` that goes through `_call()`, so it becomes an Allure step with the response attached, and model its response in `api/schemas.py` so tests can check it with `validate(response, Model)`.
 3. **Write the test** in `tests/ui/` or `tests/api/`, tag it with `smoke` or `regression`, and use the fixtures from `conftest.py` (`inventory_page` starts logged in, `created_booking` cleans up after itself).
 4. Assert with `expect()` for anything on the page, so the check retries instead of racing the UI.
 5. Check it locally before pushing: `ruff check . && ruff format --check . && pytest -n 4`.
