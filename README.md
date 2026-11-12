@@ -12,6 +12,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 | Layer | Target app | What is covered |
 |---|---|---|
 | UI | [saucedemo.com](https://www.saucedemo.com) | Login (happy path, locked-out user, validation), product sorting, cart, full checkout, order totals, known defects |
+| Accessibility | [saucedemo.com](https://www.saucedemo.com) | WCAG 2.2 A/AA scans with axe-core on every screen of the purchase flow, including error states |
 | API | [restful-booker](https://restful-booker.herokuapp.com) | Token auth, full CRUD on bookings, filtering, response contract, authorization on write operations |
 
 ## Highlights
@@ -20,6 +21,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 - **Stable locators**: `data-test` attributes via `get_by_test_id()`, plus role-based locators. No XPath and no CSS chains tied to layout.
 - **No sleeps**: Playwright auto-waiting, web-first `expect()` assertions, and page objects that wait for navigation before reading the next page.
 - **Independent, parallel-safe tests**: each test gets a fresh browser context. API tests create their own data with unique names and delete it in fixture teardown.
+- **Accessibility as a gate**: axe-core scans fail the test on any WCAG 2.2 A/AA violation and attach the full axe result to the report.
 - **Cross-browser**: Chromium and Firefox in one run, 4 workers via `pytest-xdist`.
 - **Known defects tracked, not hidden**: `xfail(strict=True)` documents a real bug in the demo app. If it ever gets fixed, the test flips to failing so the marker gets removed.
 - **Debuggable failures**: a screenshot is attached to the Allure report, and the Playwright trace is uploaded as a CI artifact.
@@ -30,6 +32,7 @@ UI and API test automation in Python with **Playwright** and **Pytest**: Page Ob
 
 ```
 ├── api/                 # API client (Playwright APIRequestContext)
+├── utils/               # Shared helpers (axe accessibility checks)
 │   └── booking_client.py
 ├── pages/               # Page Objects
 │   ├── base_page.py
@@ -57,6 +60,7 @@ playwright install chromium firefox
 pytest                                   # everything, Chromium
 pytest -m smoke                          # critical path only
 pytest -m api                            # API only
+pytest -m a11y                           # accessibility scans only
 pytest --browser firefox --headed        # watch it run
 pytest -n 4 --browser chromium --browser firefox   # parallel, cross-browser
 ```
@@ -70,6 +74,7 @@ To see the report locally (needs Java): `allure serve allure-results`
 | `smoke` | Critical-path checks |
 | `regression` | Full functional coverage |
 | `ui` / `api` | Test layer |
+| `a11y` | Accessibility scans |
 
 ## CI pipeline
 
